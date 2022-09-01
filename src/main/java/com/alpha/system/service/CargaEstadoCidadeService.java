@@ -46,5 +46,9 @@ public class CargaEstadoCidadeService {
 	public List<Cidade> getCidadePorEstado(String sigla) {
 		return cidadeRepository.findCidadesPorEstados(sigla);
 	}
+
+	public List<Estado> getEstados() {
+		return estadoRepository.findAll();
+	}
 	
 }

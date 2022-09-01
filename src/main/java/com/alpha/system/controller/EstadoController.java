@@ -36,4 +36,9 @@ public class EstadoController {
 	public ResponseEntity<Estado> getEstadoBySigla(@PathVariable String sigla) throws Exception{
 		return ResponseEntity.ok().body(cargaEstadoCidadeService.getEstadoBySigla(sigla));
 	}
+	
+	@GetMapping()
+	public ResponseEntity<List<Estado>> getEstado() {
+		return ResponseEntity.ok().body(cargaEstadoCidadeService.getEstados());
+	}
 }

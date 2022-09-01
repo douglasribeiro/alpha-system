@@ -28,7 +28,8 @@ public class InquilinoService {
 	}
 	
 	public Inquilino findById(Long id) throws Exception {
-		return inquilinoRepository.findById(id).orElseThrow(() -> new ObjectNotFoundException("Inquilino não encontrado"));
+		//return inquilinoRepository.findById(id).orElseThrow(() -> new ObjectNotFoundException("Inquilino não encontrado"));
+		return inquilinoRepository.buscaPorId(id).orElseThrow(() -> new ObjectNotFoundException("Inquilino não encontrado"));
 	}
 
 	public Inquilino save(InquilinoNewDto inquilinoNewDto) {
