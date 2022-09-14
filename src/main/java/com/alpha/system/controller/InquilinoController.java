@@ -67,4 +67,6 @@ public class InquilinoController {
 		inquilinoService.update(id, inquilino);
 		return ResponseEntity.noContent().build();
 	}
+	
+	
 }

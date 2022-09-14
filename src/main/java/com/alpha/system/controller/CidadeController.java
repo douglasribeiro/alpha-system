@@ -38,6 +38,7 @@ public class CidadeController {
 	
 	@GetMapping(value = "/{estado}")
 	public ResponseEntity<List<Cidade>> getCidadesPorEstado(@PathVariable String estado) throws Exception{
-		return ResponseEntity.ok().body(cargaEstadoCidadeService.getCidadePorEstado(estado));
+		List<Cidade> obs = cargaEstadoCidadeService.getCidadePorEstado(estado);
+		return ResponseEntity.ok().body(obs);
 	}
 }

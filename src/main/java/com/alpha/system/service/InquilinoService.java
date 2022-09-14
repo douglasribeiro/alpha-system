@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import com.alpha.entity.dto.InquilinoNewDto;
 import com.alpha.entity.model.Endereco;
 import com.alpha.entity.model.Inquilino;
+import com.alpha.entity.repository.EnderecoRepository;
 import com.alpha.entity.repository.InquilinoRepository;
 import com.alpha.system.exception.ObjectNotFoundException;
 
@@ -22,6 +23,9 @@ public class InquilinoService {
 
 	@Autowired
 	InquilinoRepository inquilinoRepository;
+	
+	@Autowired
+	EnderecoRepository enderecoRepository;
 	
 	public List<Inquilino> findAll(){
 		return inquilinoRepository.findInquilinosAtivos(); 
@@ -35,10 +39,7 @@ public class InquilinoService {
 	public Inquilino save(InquilinoNewDto inquilinoNewDto) {
 		Inquilino inquilino = inquilinoToDto(inquilinoNewDto);
 		inquilino.setId(null);
-		List<Endereco> enderecos = inquilino.getEnderecos().stream().map(x -> 
-			new Endereco(null, x.getLogradouro(), x.getNumero(), x.getComplemento(), x.getBairro(), x.getCep(), x.getTipoEndereco(), inquilino, x.getCidade()))
-				.collect(Collectors.toList());
-		inquilino.setEnderecos(enderecos);
+		
 		return inquilinoRepository.save(inquilino);
 	}
 
@@ -56,7 +57,6 @@ public class InquilinoService {
 				, inquilinoNewDto.getNacional()
 				, inquilinoNewDto.getNaturalidade()
 				);
-		inq.setEnderecos(inquilinoNewDto.getEnderecos());
 		inq.setTelefones(inquilinoNewDto.getTelefones());
 		return inq;
 	}
@@ -73,9 +73,27 @@ public class InquilinoService {
 
 	public void update(Long id, @Valid Inquilino inquilino) {
 		Inquilino obj = inquilinoRepository.findById(id).orElseThrow(() -> new ObjectNotFoundException("Inquilino não encontrado"));
+		if(inquilino.getEnderecos().size() < obj.getEnderecos().size()) {
+			for(Endereco endereco: obj.getEnderecos()) {
+				if(!inquilino.getEnderecos().contains(endereco)) {
+					endereco.setInquilino(null);
+				}
+			}
+		}
 		obj = inquilino;
+		
+		//update endereco set inquilino_id = 3 where inquilino_id = null
 		List<Endereco> enderecos = inquilino.getEnderecos().stream().map(x -> 
-		new Endereco(x.getId(), x.getLogradouro(), x.getNumero(), x.getComplemento(), x.getBairro(), x.getCep(), x.getTipoEndereco(), inquilino, x.getCidade()))
+		new Endereco(
+				x.getId(), 
+				x.getLogradouro(), 
+				x.getNumero(), 
+				x.getComplemento(), 
+				x.getBairro(), 
+				x.getCep(), 
+				x.getTipoEndereco(), 
+				inquilino, 
+				x.getCidade()))
 			.collect(Collectors.toList());
 		obj.setEnderecos(enderecos);
 		obj.setId(id);
