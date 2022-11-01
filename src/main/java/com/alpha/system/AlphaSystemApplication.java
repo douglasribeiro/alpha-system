@@ -19,6 +19,8 @@ import com.alpha.entity.model.Cidade;
 import com.alpha.entity.model.Endereco;
 import com.alpha.entity.model.Estado;
 import com.alpha.entity.model.Inquilino;
+import com.alpha.entity.model.Referencia;
+import com.alpha.entity.model.Telefone;
 import com.alpha.entity.model.Usuario;
 import com.alpha.entity.model.enums.EstCivil;
 import com.alpha.entity.model.enums.Perfil;
@@ -29,6 +31,8 @@ import com.alpha.entity.repository.EnderecoRepository;
 import com.alpha.entity.repository.EstadoRepository;
 import com.alpha.entity.repository.InquilinoRepository;
 import com.alpha.entity.repository.PessoaReposiotry;
+import com.alpha.entity.repository.ReferenciaRepository;
+import com.alpha.entity.repository.TelefoneRepository;
 import com.alpha.entity.repository.UsuarioRepository;
 
 @EnableFeignClients
@@ -44,13 +48,11 @@ public class AlphaSystemApplication {
 	@Autowired
 	private UsuarioRepository usuarioRepository;
 	@Autowired
-	private PessoaReposiotry pessoaRepository;
-	@Autowired
-	private EstadoRepository estadoRepository;
-	@Autowired
-	private CidadeRepository cidadeRepository;
+	private TelefoneRepository telefoneRepository;
 	@Autowired
 	private EnderecoRepository enderecoRepository;
+	@Autowired
+	private ReferenciaRepository referenciaRepository;
 	@Autowired
 	private BCryptPasswordEncoder encoder;
 
@@ -82,28 +84,27 @@ public class AlphaSystemApplication {
 			Inquilino inq1 = new Inquilino(1L, "Inquilino 01", Tipo.FISICO, "12345678901", "Identidade", "inquilino01@mail.com", null, EstCivil.SOLTEIRO, "Masculino", true, "Brasileiro", "São Paulo");
 			Inquilino inq2 = new Inquilino(2L, "Inquilino 02", Tipo.FISICO, "12345678902", "Identidade", "inquilino02@mail.com", null, EstCivil.CASADO, "Masculino", true, "Brasileiro", "São Paulo");
 			
-			Set<String> tel1 = new HashSet<>();
-			tel1.add("123-4567");
-			tel1.add("123-4568");
-			inq1.setTelefones(tel1);
-			Set<String> tel2 = new HashSet<>();
-			tel2.add("123-7894");
-			tel2.add("123-7895");
-			inq2.setTelefones(tel2);
-			
 			Estado est = new Estado(26, "São Paulo", "SP");
 			
 			Cidade sp = new Cidade();
-			sp.setId(5270);
+			sp.setId(4741);
 			sp.setEstado(est);
 			
 			Endereco end11 = new Endereco(1, "Alameda Paulista", "352", null, "Jardim Floridiana (Vila Xavier)", "14810256", TipoEndereco.RESIDENCIAL, inq1, sp);
 			Endereco end12 = new Endereco(2, "Avenida Jorge Haddad	", "561", null, "Vila Cidade Industrial (Vila Xavier)", "14810244", TipoEndereco.COMERCIAL, inq1, sp);
 			Endereco end21 = new Endereco(3, "Praça da Sé", "105", null, "Sé", "01001001", TipoEndereco.RESIDENCIAL, inq2, sp);
 			
+			Telefone tel1 = new Telefone(1, inq1, "16", "99711-1234");
+			Telefone tel2 = new Telefone(2, inq1, "16", "3301-1111");
+			Telefone tel3 = new Telefone(3, inq2, "16", "99725-1122");
+			Telefone tel4 = new Telefone(4, inq2, "16", "3324-6840");
+			
+			Referencia ref01 = new Referencia(1L, "Referencia Primeiro", "ref.primeiro@mail.com", "(XX) XXXX-XXXX", "(YY) YYYY-YYYY", "Observação", inq1);
+			
 			inquilinoRepository.saveAll(Arrays.asList(inq1,inq2));
 			enderecoRepository.saveAll(Arrays.asList(end11,end12,end21));
-			
+			telefoneRepository.saveAll(Arrays.asList(tel1,tel2,tel3,tel4));
+			referenciaRepository.saveAll(Arrays.asList(ref01));
 			
 		}		
 		

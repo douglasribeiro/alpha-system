@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import com.alpha.entity.dto.InquilinoNewDto;
 import com.alpha.entity.model.Inquilino;
 import com.alpha.system.service.InquilinoService;
 
@@ -45,8 +44,8 @@ public class InquilinoController {
 	}
 	
 	@PostMapping
-	public ResponseEntity<Void> insert(@RequestBody @Valid InquilinoNewDto inquilinoNewDto) {
-		Inquilino obj = inquilinoService.save(inquilinoNewDto);
+	public ResponseEntity<Void> insert(@RequestBody @Valid Inquilino inquilino) {
+		Inquilino obj = inquilinoService.save(inquilino);
 		URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
 				.path("/{id}").buildAndExpand(obj.getId()).toUri();
 		return ResponseEntity.created(uri).build();

@@ -1,6 +1,8 @@
 package com.alpha.system.service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
@@ -14,6 +16,8 @@ import org.springframework.stereotype.Service;
 import com.alpha.entity.dto.InquilinoNewDto;
 import com.alpha.entity.model.Endereco;
 import com.alpha.entity.model.Inquilino;
+import com.alpha.entity.model.Referencia;
+import com.alpha.entity.model.Telefone;
 import com.alpha.entity.repository.EnderecoRepository;
 import com.alpha.entity.repository.InquilinoRepository;
 import com.alpha.system.exception.ObjectNotFoundException;
@@ -36,11 +40,13 @@ public class InquilinoService {
 		return inquilinoRepository.buscaPorId(id).orElseThrow(() -> new ObjectNotFoundException("Inquilino não encontrado"));
 	}
 
-	public Inquilino save(InquilinoNewDto inquilinoNewDto) {
-		Inquilino inquilino = inquilinoToDto(inquilinoNewDto);
-		inquilino.setId(null);
-		
-		return inquilinoRepository.save(inquilino);
+	public Inquilino save(Inquilino inquilino) {
+		//Inquilino inquilino = inquilinoToDto(inquilinoNewDto);
+		//inquilino.setId(null);
+		Inquilino inq  = inquilinoRepository.save(inquilino);
+		if(!inquilino.getEnderecos().isEmpty() || !inquilino.getTelefones().isEmpty() || !inquilino.getReferencias().isEmpty())
+			update(inq.getId(), inquilino);
+		return inq;
 	}
 
 	private Inquilino inquilinoToDto(InquilinoNewDto inquilinoNewDto) {
@@ -57,7 +63,6 @@ public class InquilinoService {
 				, inquilinoNewDto.getNacional()
 				, inquilinoNewDto.getNaturalidade()
 				);
-		inq.setTelefones(inquilinoNewDto.getTelefones());
 		return inq;
 	}
 
@@ -82,7 +87,6 @@ public class InquilinoService {
 		}
 		obj = inquilino;
 		
-		//update endereco set inquilino_id = 3 where inquilino_id = null
 		List<Endereco> enderecos = inquilino.getEnderecos().stream().map(x -> 
 		new Endereco(
 				x.getId(), 
@@ -95,7 +99,30 @@ public class InquilinoService {
 				inquilino, 
 				x.getCidade()))
 			.collect(Collectors.toList());
+		Set<Telefone> telefones = new HashSet<>();
+		for (Telefone telefone : inquilino.getTelefones()) {
+			Telefone t = new Telefone(
+					telefone.getId(), 
+					inquilino, 
+					telefone.getDdd(), 
+					telefone.getNumero());
+			telefones.add(t);
+		}
+		
+		List<Referencia> referencias = inquilino.getReferencias().stream().map(r ->
+			new Referencia(
+					r.getId(), 
+					r.getNome(), 
+					r.getEmail(), 
+					r.getPhone01(), 
+					r.getPhone02(), 
+					r.getObservacao(),
+					inquilino)).collect(Collectors.toList());
+	
+
 		obj.setEnderecos(enderecos);
+		obj.setTelefones(telefones);
+		obj.setReferencias(referencias);
 		obj.setId(id);
 		inquilinoRepository.save(obj);
 	}
