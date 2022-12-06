@@ -1,8 +1,7 @@
 package com.alpha.system;
 
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -10,15 +9,16 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import com.alpha.entity.model.Cidade;
 import com.alpha.entity.model.Endereco;
-import com.alpha.entity.model.Estado;
+import com.alpha.entity.model.Imovel;
 import com.alpha.entity.model.Inquilino;
+import com.alpha.entity.model.Proprietario;
 import com.alpha.entity.model.Referencia;
 import com.alpha.entity.model.Telefone;
 import com.alpha.entity.model.Usuario;
@@ -26,14 +26,15 @@ import com.alpha.entity.model.enums.EstCivil;
 import com.alpha.entity.model.enums.Perfil;
 import com.alpha.entity.model.enums.Tipo;
 import com.alpha.entity.model.enums.TipoEndereco;
-import com.alpha.entity.repository.CidadeRepository;
+import com.alpha.entity.model.enums.TipoTelefone;
 import com.alpha.entity.repository.EnderecoRepository;
-import com.alpha.entity.repository.EstadoRepository;
+import com.alpha.entity.repository.ImovelRepository;
 import com.alpha.entity.repository.InquilinoRepository;
-import com.alpha.entity.repository.PessoaReposiotry;
+import com.alpha.entity.repository.ProprietarioRepository;
 import com.alpha.entity.repository.ReferenciaRepository;
 import com.alpha.entity.repository.TelefoneRepository;
 import com.alpha.entity.repository.UsuarioRepository;
+import com.alpha.system.service.ImovelService;
 
 @EnableFeignClients
 @SpringBootApplication
@@ -53,6 +54,10 @@ public class AlphaSystemApplication {
 	private EnderecoRepository enderecoRepository;
 	@Autowired
 	private ReferenciaRepository referenciaRepository;
+	@Autowired
+	private ProprietarioRepository proprietarioRepository;
+	@Autowired
+	private ImovelRepository imovelRepository;
 	@Autowired
 	private BCryptPasswordEncoder encoder;
 
@@ -80,34 +85,51 @@ public class AlphaSystemApplication {
 			usuarioRepository.save(user2);
 			usuarioRepository.save(user3);
 			usuarioRepository.save(user4);
+				
+			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
 			
-			Inquilino inq1 = new Inquilino(1L, "Inquilino 01", Tipo.FISICO, "12345678901", "Identidade", "inquilino01@mail.com", null, EstCivil.SOLTEIRO, "Masculino", true, "Brasileiro", "São Paulo");
-			Inquilino inq2 = new Inquilino(2L, "Inquilino 02", Tipo.FISICO, "12345678902", "Identidade", "inquilino02@mail.com", null, EstCivil.CASADO, "Masculino", true, "Brasileiro", "São Paulo");
+			Inquilino inq01 = new Inquilino(1l, "Inquilino 01", Tipo.FISICO, "cpfcnpj", "Identidade", "inq01@email.com", sdf.parse("01/10/1980 00:00"), EstCivil.SOLTEIRO, "Masculino", true, "Brasileiro", "São Paulo");
+			inquilinoRepository.save(inq01);
 			
-			Estado est = new Estado(26, "São Paulo", "SP");
+			Endereco end04 = new Endereco(4, "Rua Portugal"    , "1433", null, "Jardim Europa"  , "14810075", TipoEndereco.ENTREGA, "Araraquara", "SP", inq01, null);
+			Endereco end01 = new Endereco(1, "Rua Nove de Julho", "180", null, "Jardim Paulista", "14801295", TipoEndereco.RESIDENCIAL, "Araraquara", "SP", inq01, null);
+			enderecoRepository.saveAll(Arrays.asList(end01,end04));
 			
-			Cidade sp = new Cidade();
-			sp.setId(4741);
-			sp.setEstado(est);
+			Telefone telInq01 = new Telefone(1, "11", "3333-0001", TipoTelefone.PESSOAL, inq01, null);
+			Telefone telInq02 = new Telefone(2, "11", "3333-0002", TipoTelefone.COMERCIAL, inq01, null);
+			telefoneRepository.saveAll(Arrays.asList(telInq01,telInq02));
 			
-			Endereco end11 = new Endereco(1, "Alameda Paulista", "352", null, "Jardim Floridiana (Vila Xavier)", "14810256", TipoEndereco.RESIDENCIAL, inq1, sp);
-			Endereco end12 = new Endereco(2, "Avenida Jorge Haddad	", "561", null, "Vila Cidade Industrial (Vila Xavier)", "14810244", TipoEndereco.COMERCIAL, inq1, sp);
-			Endereco end21 = new Endereco(3, "Praça da Sé", "105", null, "Sé", "01001001", TipoEndereco.RESIDENCIAL, inq2, sp);
+			Referencia refInq01 = new Referencia(1l, "Referencia 01", "referencia01@email.com", "(16)12345678", null, null, inq01, null);
+			Referencia refInq02 = new Referencia(2l,"Inquilino 2", "email@email.com", "111", "222", "observ", inq01, null);
+			referenciaRepository.saveAll(Arrays.asList(refInq01,refInq02));
 			
-			Telefone tel1 = new Telefone(1, inq1, "16", "99711-1234");
-			Telefone tel2 = new Telefone(2, inq1, "16", "3301-1111");
-			Telefone tel3 = new Telefone(3, inq2, "16", "99725-1122");
-			Telefone tel4 = new Telefone(4, inq2, "16", "3324-6840");
+			Proprietario prop01 = new Proprietario(1l, "Proprietario", Tipo.FISICO, "cpf", "Ident", "email@email.com", null, EstCivil.SOLTEIRO, "Masculino", true, "Brasileiro", "São Paulo");
+			proprietarioRepository.save(prop01);
 			
-			Referencia ref01 = new Referencia(1L, "Referencia Primeiro", "ref.primeiro@mail.com", "(XX) XXXX-XXXX", "(YY) YYYY-YYYY", "Observação", inq1);
+			Endereco end03 = new Endereco(3, "Rua Portugal", "1433", null, "Jardim Europa", "14801075", TipoEndereco.ENTREGA, "Araraquara", "SP", null, prop01);
+			Endereco end02 = new Endereco(2, "Rua Nove de Julho", "180", null, "Jardim Paulista", "14801295", TipoEndereco.RESIDENCIAL, "Araraquara", "SP", null, prop01);
+			enderecoRepository.saveAll(Arrays.asList(end02,end03));
 			
-			inquilinoRepository.saveAll(Arrays.asList(inq1,inq2));
-			enderecoRepository.saveAll(Arrays.asList(end11,end12,end21));
-			telefoneRepository.saveAll(Arrays.asList(tel1,tel2,tel3,tel4));
-			referenciaRepository.saveAll(Arrays.asList(ref01));
+			Telefone telInq03 = new Telefone(3, "11", "3333-0001", TipoTelefone.PESSOAL, null, prop01);
+			Telefone telInq04 = new Telefone(4, "11", "3333-0002", TipoTelefone.COMERCIAL, null, prop01);
+			telefoneRepository.saveAll(Arrays.asList(telInq03,telInq04));
 			
-		}		
+			Referencia refInq03 = new Referencia(3l, "Referencia 01", "referencia01@email.com", "(16)12345678", null, null, null, prop01);
+			Referencia refInq04 = new Referencia(4l,"Inquilino 2", "email@email.com", "111", "222", "observ", null, prop01);
+			referenciaRepository.saveAll(Arrays.asList(refInq03,refInq04));
+			
+			Endereco endImov = new Endereco(null, "Rua Portugal", "800", null, "Jardim Europa", "14801075", TipoEndereco.ENTREGA, "Araraquara", "SP", null, null);
+			enderecoRepository.save(endImov);
+			
+			Imovel im01 = new Imovel(1L, endImov, "matricula", "Complemento", false, 0, 0, 0, "1000", "700", "2", "3", "1", "5", "2", "Obs");
+			imovelRepository.save(im01);
+		}
 		
 	}
 
+	@Bean
+	public ImovelService imovelService() {
+		return new ImovelService();
+	}
+	
 }

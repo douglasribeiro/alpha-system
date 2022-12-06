@@ -1,8 +1,7 @@
 package com.alpha.system.service;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
@@ -20,6 +19,8 @@ import com.alpha.entity.model.Referencia;
 import com.alpha.entity.model.Telefone;
 import com.alpha.entity.repository.EnderecoRepository;
 import com.alpha.entity.repository.InquilinoRepository;
+import com.alpha.entity.repository.ReferenciaRepository;
+import com.alpha.entity.repository.TelefoneRepository;
 import com.alpha.system.exception.ObjectNotFoundException;
 
 @Service
@@ -31,6 +32,12 @@ public class InquilinoService {
 	@Autowired
 	EnderecoRepository enderecoRepository;
 	
+	@Autowired
+	TelefoneRepository telefoneRepository;
+	
+	@Autowired
+	ReferenciaRepository referenciaRepository;
+	
 	public List<Inquilino> findAll(){
 		return inquilinoRepository.findInquilinosAtivos(); 
 	}
@@ -41,12 +48,7 @@ public class InquilinoService {
 	}
 
 	public Inquilino save(Inquilino inquilino) {
-		//Inquilino inquilino = inquilinoToDto(inquilinoNewDto);
-		//inquilino.setId(null);
-		Inquilino inq  = inquilinoRepository.save(inquilino);
-		if(!inquilino.getEnderecos().isEmpty() || !inquilino.getTelefones().isEmpty() || !inquilino.getReferencias().isEmpty())
-			update(inq.getId(), inquilino);
-		return inq;
+		return inquilinoRepository.save(inquilino);
 	}
 
 	private Inquilino inquilinoToDto(InquilinoNewDto inquilinoNewDto) {
@@ -75,17 +77,21 @@ public class InquilinoService {
 
 		return inquilinoRepository.findPageInquilino(pageRequest);	
 	}
-
-	public void update(Long id, @Valid Inquilino inquilino) {
+	
+	public void update(long id, @Valid Inquilino inquilino) {
 		Inquilino obj = inquilinoRepository.findById(id).orElseThrow(() -> new ObjectNotFoundException("Inquilino não encontrado"));
-		if(inquilino.getEnderecos().size() < obj.getEnderecos().size()) {
-			for(Endereco endereco: obj.getEnderecos()) {
-				if(!inquilino.getEnderecos().contains(endereco)) {
-					endereco.setInquilino(null);
-				}
-			}
-		}
-		obj = inquilino;
+		obj.setAtivo(inquilino.getAtivo());
+		obj.setCpfcnpj(inquilino.getCpfcnpj());
+		obj.setDtNiver(inquilino.getDtNiver());
+		obj.setEmail(inquilino.getEmail());
+		obj.setNacional(inquilino.getNacional());
+		obj.setEstCivil(inquilino.getEstCivil());
+		obj.setIdentinscr(inquilino.getIdentinscr());
+		obj.setNaturalidade(inquilino.getNaturalidade());
+		obj.setNome(inquilino.getNome());
+		obj.setPessoa(inquilino.getPessoa());
+		obj.setSexo(inquilino.getSexo());
+		
 		
 		List<Endereco> enderecos = inquilino.getEnderecos().stream().map(x -> 
 		new Endereco(
@@ -95,19 +101,23 @@ public class InquilinoService {
 				x.getComplemento(), 
 				x.getBairro(), 
 				x.getCep(), 
-				x.getTipoEndereco(), 
-				inquilino, 
-				x.getCidade()))
+				x.getTipoEndereco(),
+				x.getCidade(),
+				x.getEstado(),
+				inquilino,
+				x.getProprietario()))
 			.collect(Collectors.toList());
-		Set<Telefone> telefones = new HashSet<>();
-		for (Telefone telefone : inquilino.getTelefones()) {
-			Telefone t = new Telefone(
-					telefone.getId(), 
-					inquilino, 
-					telefone.getDdd(), 
-					telefone.getNumero());
-			telefones.add(t);
-		}
+		
+		List<Telefone> telefones = inquilino.getTelefones().stream().map(t -> 
+			new Telefone(
+					t.getId(),
+					t.getDdd(),
+					t.getNumero(),
+					t.getTipo(),
+					inquilino,
+					t.getProprietario()
+					)
+		).collect(Collectors.toList());
 		
 		List<Referencia> referencias = inquilino.getReferencias().stream().map(r ->
 			new Referencia(
@@ -117,14 +127,50 @@ public class InquilinoService {
 					r.getPhone01(), 
 					r.getPhone02(), 
 					r.getObservacao(),
-					inquilino)).collect(Collectors.toList());
-	
+					inquilino,
+					r.getProprietario())).collect(Collectors.toList());
+		
+		List<Endereco> removeEndereco = obj.getEnderecos()
+				.stream()
+				.filter(remov -> !inquilino.getEnderecos().contains(remov))
+				.collect(Collectors.toList());
+				
+		
+		List<Telefone> removeTelefone = obj.getTelefones()
+				.stream()
+				.filter(remov -> !inquilino.getTelefones().contains(remov))
+				.collect(Collectors.toList());
+		
+		List<Referencia> removeReferencia = obj.getReferencias()
+				.stream()
+				.filter(remov -> !inquilino.getReferencias().contains(remov))
+				.collect(Collectors.toList());
 
 		obj.setEnderecos(enderecos);
 		obj.setTelefones(telefones);
 		obj.setReferencias(referencias);
 		obj.setId(id);
 		inquilinoRepository.save(obj);
+		if(!removeEndereco.isEmpty()) {
+			for(Endereco reg: removeEndereco) {
+				enderecoRepository.deleteById(reg.getId());
+			}
+		}
+		if(!removeTelefone.isEmpty()) {
+			for(Telefone reg: removeTelefone) {
+				telefoneRepository.deleteById(reg.getId());
+			}
+		}
+		if(!removeReferencia.isEmpty()) {
+			for(Referencia reg: removeReferencia) {
+				referenciaRepository.deleteById(reg.getId());
+			}
+		}
+	}
+
+	
+	public void delete(Long id) {
+		inquilinoRepository.deleteById(id);
 	}
 	
 }
