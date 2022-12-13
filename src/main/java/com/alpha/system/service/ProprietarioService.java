@@ -128,5 +128,13 @@ public class ProprietarioService {
 		obj.setId(id);
 		proprietarioRepository.save(obj);
 	}
+
+	public Proprietario searchGeneric(String generic) {
+		if(!proprietarioRepository.searchNome(generic).isEmpty())
+			return proprietarioRepository.searchNome(generic).get();
+		if(!proprietarioRepository.searchEmail(generic).isEmpty())
+			return proprietarioRepository.searchEmail(generic).get();
+		return null;
+	}
 	
 }

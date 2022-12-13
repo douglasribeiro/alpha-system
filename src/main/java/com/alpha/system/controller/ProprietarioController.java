@@ -38,6 +38,11 @@ public class ProprietarioController {
 		return ResponseEntity.ok().body(proprietarioService.findById(id));
 	}
 	
+	@GetMapping(value="/nome/{generic}")
+	public ResponseEntity<Proprietario> searchGeneric(@PathVariable("generic") String generic) throws Exception{
+		return ResponseEntity.ok().body(proprietarioService.searchGeneric(generic));
+	}
+	
 	@GetMapping(value="/cpf/{cpf}")
 	public ResponseEntity<Proprietario> findByCpf(@PathVariable("cpf") String cpf) throws Exception{
 		return ResponseEntity.ok().body(proprietarioService.findByCpf(cpf));

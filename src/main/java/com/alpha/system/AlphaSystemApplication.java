@@ -1,6 +1,6 @@
 package com.alpha.system;
 
-import java.text.SimpleDateFormat;
+import java.text.SimpleDateFormat;import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -119,10 +119,20 @@ public class AlphaSystemApplication {
 			referenciaRepository.saveAll(Arrays.asList(refInq03,refInq04));
 			
 			Endereco endImov = new Endereco(null, "Rua Portugal", "800", null, "Jardim Europa", "14801075", TipoEndereco.ENTREGA, "Araraquara", "SP", null, null);
-			enderecoRepository.save(endImov);
+			Endereco endImov2 = new Endereco(2, "Rua Nove de Julho", "350", null, "Jardim Paulista", "14801295", TipoEndereco.RESIDENCIAL, "Araraquara", "SP", null, null);
+			enderecoRepository.saveAll(Arrays.asList(endImov, endImov2));
 			
 			Imovel im01 = new Imovel(1L, endImov, "matricula", "Complemento", false, 0, 0, 0, "1000", "700", "2", "3", "1", "5", "2", "Obs");
-			imovelRepository.save(im01);
+			Imovel im02 = new Imovel(2L, endImov2, "matricula 2", "Complemento 2", false, 0, 0, 1, "1000", "700", "2", "3", "1", "5", "2", "Obs");
+			
+			im01.getProprietarios().add(prop01);
+			
+			imovelRepository.saveAll(Arrays.asList(im01,im02));
+			
+			prop01.getImoveis().add(im01);
+			prop01.getImoveis().add(im02);
+			prop01.setIncludeDate(sdf.parse("01/10/1980 00:00"));
+			proprietarioRepository.save(prop01);
 		}
 		
 	}

@@ -37,8 +37,8 @@ public class ImovelController {
 	}
 	
 	@PostMapping
-	public ResponseEntity<Void> insert(@RequestBody @Valid ImovelDTO imovelDTO) {
-		Imovel obj = imovelService.save(imovelDTO);
+	public ResponseEntity<Void> insert(@RequestBody @Valid Imovel imovel) {
+		Imovel obj = imovelService.save(imovel);
 		URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
 				.path("/{id}").buildAndExpand(obj.getId()).toUri();
 		return ResponseEntity.created(uri).build();
