@@ -1,6 +1,5 @@
 package com.alpha.system.service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,8 +14,10 @@ import org.springframework.stereotype.Service;
 import com.alpha.entity.dto.InquilinoNewDto;
 import com.alpha.entity.model.Endereco;
 import com.alpha.entity.model.Inquilino;
+import com.alpha.entity.model.Proprietario;
 import com.alpha.entity.model.Referencia;
 import com.alpha.entity.model.Telefone;
+import com.alpha.entity.model.enums.TipoEndereco;
 import com.alpha.entity.repository.EnderecoRepository;
 import com.alpha.entity.repository.InquilinoRepository;
 import com.alpha.entity.repository.ReferenciaRepository;
@@ -93,6 +94,8 @@ public class InquilinoService {
 		obj.setSexo(inquilino.getSexo());
 		
 		
+		//Endereco(Inquilino inquilino, Proprietario proprietario) {
+		
 		List<Endereco> enderecos = inquilino.getEnderecos().stream().map(x -> 
 		new Endereco(
 				x.getId(), 
@@ -104,7 +107,7 @@ public class InquilinoService {
 				x.getTipoEndereco(),
 				x.getCidade(),
 				x.getEstado(),
-				inquilino,
+				null,
 				x.getProprietario()))
 			.collect(Collectors.toList());
 		

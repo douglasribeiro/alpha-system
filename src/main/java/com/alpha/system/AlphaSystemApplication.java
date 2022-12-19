@@ -122,17 +122,14 @@ public class AlphaSystemApplication {
 			Endereco endImov2 = new Endereco(2, "Rua Nove de Julho", "350", null, "Jardim Paulista", "14801295", TipoEndereco.RESIDENCIAL, "Araraquara", "SP", null, null);
 			enderecoRepository.saveAll(Arrays.asList(endImov, endImov2));
 			
-			Imovel im01 = new Imovel(1L, endImov, "matricula", "Complemento", false, 0, 0, 0, "1000", "700", "2", "3", "1", "5", "2", "Obs");
-			Imovel im02 = new Imovel(2L, endImov2, "matricula 2", "Complemento 2", false, 0, 0, 1, "1000", "700", "2", "3", "1", "5", "2", "Obs");
 			
-			im01.getProprietarios().add(prop01);
+			Imovel im01 = new Imovel(1L, "Proprietario numero 1","987","Complemento imovel",0,0,0,0,"1000","80","1","2","0","4","1","Observacao", prop01,"Logrdouro","100","Complemento endereco","Centro","14.810.244","Cidade","Estado");
+			Imovel im02 = new Imovel(2L, "Proprietario numero 3","987","Complemento imivel",0,0,0,0,"1000","80","1","2","0","4","1","Observacao", prop01,"Logrdouro","100","Complemento endereco","Centro","14.810.244","Cidade","Estado");
+			Imovel im03 = new Imovel(3l,"Proprietario numero 3","987","Complemento imivel",0,0,0,0,"1000","80","1","2","0","4","1","Observacao", prop01,"Logrdouro","100","Complemento endereco","Centro","14.810.244","Cidade","Estado");
 			
-			imovelRepository.saveAll(Arrays.asList(im01,im02));
+			imovelRepository.saveAll(Arrays.asList(im01,im02,im03));
 			
-			prop01.getImoveis().add(im01);
-			prop01.getImoveis().add(im02);
-			prop01.setIncludeDate(sdf.parse("01/10/1980 00:00"));
-			proprietarioRepository.save(prop01);
+			
 		}
 		
 	}
