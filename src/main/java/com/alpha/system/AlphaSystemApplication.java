@@ -16,6 +16,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import com.alpha.entity.model.Endereco;
+import com.alpha.entity.model.Foto;
 import com.alpha.entity.model.Imovel;
 import com.alpha.entity.model.Inquilino;
 import com.alpha.entity.model.Proprietario;
@@ -28,6 +29,7 @@ import com.alpha.entity.model.enums.Tipo;
 import com.alpha.entity.model.enums.TipoEndereco;
 import com.alpha.entity.model.enums.TipoTelefone;
 import com.alpha.entity.repository.EnderecoRepository;
+import com.alpha.entity.repository.FotoRepository;
 import com.alpha.entity.repository.ImovelRepository;
 import com.alpha.entity.repository.InquilinoRepository;
 import com.alpha.entity.repository.ProprietarioRepository;
@@ -60,6 +62,8 @@ public class AlphaSystemApplication {
 	private ImovelRepository imovelRepository;
 	@Autowired
 	private BCryptPasswordEncoder encoder;
+	@Autowired
+	private FotoRepository fotoRepository;
 
 	public static void main(String[] args) {
 		SpringApplication.run(AlphaSystemApplication.class, args);
@@ -123,12 +127,20 @@ public class AlphaSystemApplication {
 			enderecoRepository.saveAll(Arrays.asList(endImov, endImov2));
 			
 			
-			Imovel im01 = new Imovel(1L, "Proprietario numero 1","987","Complemento imovel",0,0,0,0,"1000","80","1","2","0","4","1","Observacao", prop01,"Logrdouro","100","Complemento endereco","Centro","14.810.244","Cidade","Estado");
-			Imovel im02 = new Imovel(2L, "Proprietario numero 3","987","Complemento imivel",0,0,0,0,"1000","80","1","2","0","4","1","Observacao", prop01,"Logrdouro","100","Complemento endereco","Centro","14.810.244","Cidade","Estado");
-			Imovel im03 = new Imovel(3l,"Proprietario numero 3","987","Complemento imivel",0,0,0,0,"1000","80","1","2","0","4","1","Observacao", prop01,"Logrdouro","100","Complemento endereco","Centro","14.810.244","Cidade","Estado");
+			Imovel im01 = new Imovel(1L, "Proprietario numero 1","987","Complemento imovel",0,0,0,0,"1000","80","1","2","0","4","1","Observacao", prop01,"Logrdouro A","357","Complemento endereco","Centro","14.810.244","Cidade","Estado");
+			Imovel im02 = new Imovel(2L, "Proprietario numero 3","987","Complemento imivel",0,0,0,0,"1000","80","1","2","0","4","1","Observacao", prop01,"Logrdouro B","100","Complemento endereco","Centro","14.810.244","Cidade","Estado");
+			Imovel im03 = new Imovel(3l,"Proprietario numero 3","987","Complemento imivel",0,0,0,0,"1000","80","1","2","0","4","1","Observacao", prop01,"Logrdouro C","146","Complemento endereco","Centro","14.810.244","Cidade","Estado");
 			
-			imovelRepository.saveAll(Arrays.asList(im01,im02,im03));
 			
+			Foto ft01 = new Foto(null,"/tmp","foto teste", "arquivo01.png", im01);
+			Foto ft02 = new Foto(null,"/tmp","foto teste 2", "arquivo02.png", im01);
+			Foto ft03 = new Foto(null,"/tmp","foto teste 3", "arquivo03.png", im01);
+			
+			Foto ft04 = new Foto(null,"/tmp","foto teste 3", "arquivo04.png", im02);
+			
+			im01.setFotos(Arrays.asList(ft01,ft02,ft03));
+			im02.setFotos(Arrays.asList(ft04));
+			imovelRepository.saveAll(Arrays.asList(im01,im02,im03));			
 			
 		}
 		
@@ -136,7 +148,7 @@ public class AlphaSystemApplication {
 
 	@Bean
 	public ImovelService imovelService() {
-		return new ImovelService();
+		return new ImovelService(null, imovelRepository);
 	}
 	
 }

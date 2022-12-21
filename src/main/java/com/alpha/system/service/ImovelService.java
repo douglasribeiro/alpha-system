@@ -1,23 +1,34 @@
 package com.alpha.system.service;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
-import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
-import com.alpha.entity.dto.ImovelDTO;
 import com.alpha.entity.model.Imovel;
 import com.alpha.entity.repository.ImovelRepository;
 import com.alpha.system.exception.ObjectNotFoundException;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class ImovelService {
 	
-	@Autowired
-	ImovelRepository imovelRepository;
+	private final String pathArquivos;
+	private final ImovelRepository imovelRepository;
 
+	public ImovelService(String pathArquivos, ImovelRepository imovelRepository) {
+		this.imovelRepository = imovelRepository;
+		this.pathArquivos = pathArquivos;
+	}
+	
 	public List<Imovel> findAll() {
 		List<Imovel> response = imovelRepository.findAll().stream().map(res -> writeTransiente(res)).collect(Collectors.toList());
 		
@@ -85,11 +96,37 @@ public class ImovelService {
 				imovel.getCep(),
 				imovel.getCidade(),
 				imovel.getEstado());
+		response.setFotos(imovel.getFotos());	
 		return response;
 	}
 
 	public void delete(Long id) {
 		imovelRepository.delete(imovelRepository.findById(id).orElseThrow(() -> new ObjectNotFoundException("Imovel não encontrado")));
+	}
+
+	public ResponseEntity<String> upload(MultipartFile file, String usuario) {
+		log.info("Recebendo arquivo(s)");
+		
+		File destino = new File(pathArquivos+usuario);
+		if(!destino.exists()) {
+			destino.mkdirs();
+		}
+		
+		
+		var caminho = pathArquivos+usuario+"/" + UUID.randomUUID() + "." + extrairExtensao(file.getOriginalFilename());
+		log.info("Novo nome do arquivo: " + caminho);
+		try {
+			Files.copy(file.getInputStream(), Path.of(caminho), StandardCopyOption.REPLACE_EXISTING);
+			return new ResponseEntity<String>("{\"mensagem\": \"Arquivo carregado com sucesso!\"} ", HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<String>("{\"mensagem\": \"Erro ao carregar arquivo!\"} ", HttpStatus.INTERNAL_SERVER_ERROR);		
+		}
+		 
+	}
+
+	private String extrairExtensao(String nomeArquivo) {
+		int i = nomeArquivo.lastIndexOf(".");
+		return nomeArquivo.substring(i + 1);
 	}
 
 }
