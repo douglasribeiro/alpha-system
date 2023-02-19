@@ -18,12 +18,20 @@ import com.alpha.system.service.CargaEstadoCidadeService;
 @RequestMapping(value = "/cidade")
 public class CidadeController {
 	
-	@Autowired
 	CargaEstadoCidadeService cargaEstadoCidadeService;
+	
+	public CidadeController(CargaEstadoCidadeService cargaEstadoCidadeService) {
+		this.cargaEstadoCidadeService = cargaEstadoCidadeService;
+	}
 	
 	@PostMapping()
 	public ResponseEntity<List<Cidade>> cargaCidade(@RequestBody List<Cidade> cidade) {		
 		return ResponseEntity.ok().body(cargaEstadoCidadeService.insertCidade(cidade));
+	}
+	
+	@GetMapping()
+	public ResponseEntity<List<Cidade>> getCidadeAll() throws Exception{
+		return ResponseEntity.ok().body(cargaEstadoCidadeService.getAllCidades());
 	}
 	
 	@GetMapping(value = "/id/{id}")

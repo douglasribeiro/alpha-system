@@ -1,16 +1,13 @@
 package com.alpha.system.controller;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
+
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -26,12 +23,12 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import com.alpha.entity.model.Foto;
 import com.alpha.entity.model.Imovel;
+import com.alpha.entity.model.ResponseMessage;
+import com.alpha.system.message.ResponseFile;
 import com.alpha.system.service.FilesStorageService;
 import com.alpha.system.service.ImovelService;
-import com.alpha.system.util.FileUploadResponse;
-import com.alpha.system.util.FileUtil;
-import com.alpha.system.util.ResponseMessage;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -41,17 +38,14 @@ import lombok.extern.slf4j.Slf4j;
 @CrossOrigin("*")
 public class ImovelController {
 
-	
-	
+	private static final String C_IMOBILIARIA_FOTOS = "C:/imobiliaria/fotos/";
 	private final FilesStorageService storageService;
 	private final ImovelService imovelService;
 
-	public ImovelController(ImovelService imovelService,
-			FilesStorageService storageService) {
+	public ImovelController(ImovelService imovelService, FilesStorageService storageService) {
 		this.imovelService = imovelService;
 		this.storageService = storageService;
 	}
-
 
 	@GetMapping
 	public ResponseEntity<List<Imovel>> findAll() {
@@ -86,81 +80,118 @@ public class ImovelController {
 		return ResponseEntity.noContent().build();
 	}
 
-	@PostMapping("/upload")
-	public ResponseEntity<ResponseMessage> uploadFiles(@RequestParam("files") MultipartFile[] files) {
-		String message = "";
-		try {
-			List<String> fileNames = new ArrayList<>();
+	// ----------------------------------------------------------------------------------------------------------------------
 
-			Arrays.asList(files).stream().forEach(file -> {
-				storageService.save(file);
-				fileNames.add(file.getOriginalFilename());
-			});
+//	@PostMapping("/uploads/{cliente}")
+//	public ResponseEntity<ResponseMessage> handleFileUpload(@RequestParam("file") MultipartFile file, @PathVariable String cliente) {
+//		String message = "";
+//		String fileName = file.getOriginalFilename();
+//		try {
+//			String path = C_IMOBILIARIA_FOTOS + cliente + "/";
+//			File dirPath = new File(path);
+//			if (!dirPath.exists()) {
+//				dirPath.mkdirs();
+//			}
+//			log.info("Upload imoveis sucesso.");
+//			file.transferTo(new File(path + fileName));
+//			message = "Upload imoveis sucesso: " + file.getOriginalFilename();
+//		    return ResponseEntity.status(HttpStatus.OK).body(new ResponseMessage(message));
+//		} catch (Exception e) {
+//			message = "Não foi possivel fazer o upload do arquivo: " + file.getOriginalFilename() + "!";
+//		    return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(new ResponseMessage(message));
+//		}
+//	}
 
-			message = "Upload sucesso: " + fileNames;
-			return ResponseEntity.status(HttpStatus.OK).body(new ResponseMessage(message));
-		} catch (Exception e) {
-			message = "Falha no upload!";
-			return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(new ResponseMessage(message));
-		}
-	}
+//	@GetMapping("/uploads")
+//	public ResponseEntity<List<FileInfo>> ListFiles() {
+//		List<FileInfo> fileInfos = storageService.loadAll().map(path -> {
+//			String filename = path.getFileName().toString();
+//			String url = MvcUriComponentsBuilder
+//					.fromMethodName(ImovelController.class, "getFile", path.getFileName().toString()).build()
+//					.toString();
+//
+//			return new FileInfo(filename, url);
+//		}).collect(Collectors.toList());
+//
+//		return ResponseEntity.status(HttpStatus.OK).body(fileInfos);
+//	}
+
+//	@GetMapping("/files/{filename:.+}")
+//	public ResponseEntity<Resource> getFilex(@PathVariable String filename) {
+//		Resource file = storageService.load(filename);
+//		return ResponseEntity.ok()
+//				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
+//				.body(file);
+//	}
+
+//	@GetMapping("/uploads/{cliente}")
+//	public ResponseEntity<List<String>> getListFiles(@PathVariable String cliente) throws IOException {
+//		String paths = C_IMOBILIARIA_FOTOS + cliente;
+//
+//		String[] result;
+//		File f = new File(paths);
+//		result = f.list();
+//		List<String> resultx = new ArrayList<>();
+//		for (String unid : result) {
+//			resultx.add(C_IMOBILIARIA_FOTOS + unid);
+//		}
+//		log.info("Listagem de arquivos.");
+//		return ResponseEntity.status(HttpStatus.OK).body(resultx);
+//	}
+
+//	@GetMapping("/files")
+//	  public ResponseEntity<List<FileInfo>> getListFiles() {
+//	    List<FileInfo> fileInfos = storageService.loadAll().map(path -> {
+//	      String filename = path.getFileName().toString();
+//	      String url = MvcUriComponentsBuilder
+//	          .fromMethodName(FilesController.class, "getFile", path.getFileName().toString()).build().toString();
+//
+//	      return new FileInfo(filename, url);
+//	    }).collect(Collectors.toList());
+//
+//	    return ResponseEntity.status(HttpStatus.OK).body(fileInfos);
+//	  }
 	
-	
-	//----------------------------------------------------------------------------------------------------------------------
-	
-	/**
-     * Method to upload multiple files
-     * @param files
-     * @return FileResponse
-     */
-    @PostMapping("/uploads")
-    public ResponseEntity<FileUploadResponse> uploadFilesx(@RequestParam("files") MultipartFile[] files) {
-        try {
-        	Path filePathX = Paths.get("/");
-            createDirIfNotExist();
+	@PostMapping("/upload/{imovel}")
+	  public ResponseEntity<ResponseMessage> uploadFile(@RequestParam("file") MultipartFile file, @PathVariable Long imovel) {
+	    String message = "";
+	    try {
+	      storageService.store(file,imovel);
 
-            List<String> fileNames = new ArrayList<>();
+	      message = "Uploaded the file successfully: " + file.getOriginalFilename();
+	      return ResponseEntity.status(HttpStatus.OK).body(new ResponseMessage(message));
+	    } catch (Exception e) {
+	      message = "Could not upload the file: " + file.getOriginalFilename() + "!";
+	      return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(new ResponseMessage(message));
+	    }
+	  }
 
-            // read and write the file to the local folder
-            Arrays.asList(files).stream().forEach(file -> {
-                byte[] bytes = new byte[0];
-                try {
-                    bytes = file.getBytes();
-                    Files.write(Paths.get(FileUtil.folderPath + file.getOriginalFilename()), bytes);
-                    fileNames.add(file.getOriginalFilename());
-                } catch (IOException e) {
+	  @GetMapping("/files")
+	  public ResponseEntity<List<ResponseFile>> getListFiles() {
+	    List<ResponseFile> files = storageService.getAllFiles().map(dbFile -> {
+	      String fileDownloadUri = ServletUriComponentsBuilder
+	          .fromCurrentContextPath()
+	          .path("/files/")
+	          .path(dbFile.getId())
+	          .toUriString();
 
-                }
-            });
+	      return new ResponseFile(
+	          dbFile.getName(),
+	          fileDownloadUri,
+	          dbFile.getType(),
+	          dbFile.getData().length);
+	    }).collect(Collectors.toList());
 
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(new FileUploadResponse("Files uploaded successfully: " + fileNames));
+	    return ResponseEntity.status(HttpStatus.OK).body(files);
+	  }
 
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED)
-                    .body(new FileUploadResponse("Exception to upload files!"));
-        }
-    }
+	  @GetMapping("/files/{id}")
+	  public ResponseEntity<byte[]> getFile(@PathVariable String id) {
+	    Foto fileDB = storageService.getFile(id);
 
-    /**
-     * Create directory to save files, if not exist
-     */
-    private void createDirIfNotExist() {
-        //create directory to save the files
-        File directory = new File(FileUtil.folderPath);
-        if (! directory.exists()){
-            directory.mkdir();
-        }
-    }
-
-    /**
-     * Method to get the list of files from the file storage folder.
-     * @return file
-     */
-    @GetMapping("/files")
-    public ResponseEntity<String[]> getListFiles() {
-        return ResponseEntity.status(HttpStatus.OK)
-                .body( new File(FileUtil.folderPath).list());
-    }
+	    return ResponseEntity.ok()
+	        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileDB.getName() + "\"")
+	        .body(fileDB.getData());
+	  }
 
 }

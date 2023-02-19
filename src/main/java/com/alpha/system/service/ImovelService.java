@@ -1,15 +1,19 @@
 package com.alpha.system.service;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.alpha.entity.model.Imovel;
@@ -19,14 +23,23 @@ import com.alpha.system.exception.ObjectNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Service
 public class ImovelService {
 	
-	private final String pathArquivos;
 	private final ImovelRepository imovelRepository;
+	
+	private final Path root = Paths.get("C:/imobiliaria/fotos/");
 
-	public ImovelService(String pathArquivos, ImovelRepository imovelRepository) {
+	public void init() {
+		try {
+			Files.createDirectory(root);
+		} catch (IOException e) {
+			throw new RuntimeException("Could not initialize folder for upload!");
+		}
+	}
+
+	public ImovelService(ImovelRepository imovelRepository) {
 		this.imovelRepository = imovelRepository;
-		this.pathArquivos = pathArquivos;
 	}
 	
 	public List<Imovel> findAll() {
@@ -36,10 +49,11 @@ public class ImovelService {
 	}
 
 	public Imovel findById(Long id) {
-		return writeTransiente(imovelRepository.findById(id).orElseThrow(() -> new ObjectNotFoundException("Imovel não encontrado")));
+		return imovelRepository.findById(id).orElseThrow(() -> new ObjectNotFoundException("Imovel não encontrado"));
 	}
 
 	public Imovel save(Imovel imovel) {
+		imovel.setId(null);
 		return imovelRepository.save(imovel);
 	}
 	
@@ -107,13 +121,13 @@ public class ImovelService {
 	public ResponseEntity<String> upload(MultipartFile file, String usuario) {
 		log.info("Recebendo arquivo(s)");
 		
-		File destino = new File(pathArquivos+usuario);
+		File destino = new File(root+"/"+usuario);
 		if(!destino.exists()) {
 			destino.mkdirs();
 		}
 		
 		
-		var caminho = pathArquivos+usuario+"/" + UUID.randomUUID() + "." + extrairExtensao(file.getOriginalFilename());
+		var caminho = root+"\\"+usuario+"\\" + UUID.randomUUID() + "." + extrairExtensao(file.getOriginalFilename());
 		log.info("Novo nome do arquivo: " + caminho);
 		try {
 			Files.copy(file.getInputStream(), Path.of(caminho), StandardCopyOption.REPLACE_EXISTING);

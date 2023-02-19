@@ -1,6 +1,6 @@
 package com.alpha.system;
 
-import java.text.SimpleDateFormat;import java.util.ArrayList;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +16,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import com.alpha.entity.model.Endereco;
-import com.alpha.entity.model.Foto;
 import com.alpha.entity.model.Imovel;
 import com.alpha.entity.model.Inquilino;
 import com.alpha.entity.model.Proprietario;
@@ -29,15 +28,18 @@ import com.alpha.entity.model.enums.Tipo;
 import com.alpha.entity.model.enums.TipoEndereco;
 import com.alpha.entity.model.enums.TipoTelefone;
 import com.alpha.entity.repository.EnderecoRepository;
-import com.alpha.entity.repository.FotoRepository;
 import com.alpha.entity.repository.ImovelRepository;
 import com.alpha.entity.repository.InquilinoRepository;
 import com.alpha.entity.repository.ProprietarioRepository;
 import com.alpha.entity.repository.ReferenciaRepository;
 import com.alpha.entity.repository.TelefoneRepository;
 import com.alpha.entity.repository.UsuarioRepository;
+import com.alpha.system.controller.ImovelController;
 import com.alpha.system.service.ImovelService;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @EnableFeignClients
 @SpringBootApplication
 @ComponentScan({"com.alpha.system", "com.alpha.entity"})
@@ -62,9 +64,7 @@ public class AlphaSystemApplication {
 	private ImovelRepository imovelRepository;
 	@Autowired
 	private BCryptPasswordEncoder encoder;
-	@Autowired
-	private FotoRepository fotoRepository;
-
+	
 	public static void main(String[] args) {
 		SpringApplication.run(AlphaSystemApplication.class, args);
 	}
@@ -126,29 +126,19 @@ public class AlphaSystemApplication {
 			Endereco endImov2 = new Endereco(2, "Rua Nove de Julho", "350", null, "Jardim Paulista", "14801295", TipoEndereco.RESIDENCIAL, "Araraquara", "SP", null, null);
 			enderecoRepository.saveAll(Arrays.asList(endImov, endImov2));
 			
+			Imovel imovel = new Imovel(1L, "Propietario"  , "12345678" , "Complemento", 0, 0, 0, 0, "1200", "180", "2", "3", "1", "6", "1", "Obs", prop01, "Logradouro", "100", "Compl end", "Bairro", "14800-000", "Araraquara", "SP");
+			Imovel imv02 = new Imovel(2L, "Proprietario 2", "123456788", "Compl"      , 0, 0, 0, 0, "3600", "120", "2", "3", "1", "6", "1", "Obs", prop01, "Logradouro", "100", "Compl end", "Bairro", "14800-000", "Araraquara", "SP");
 			
-			Imovel im01 = new Imovel(1L, "Proprietario numero 1","987","Complemento imovel",0,0,0,0,"1000","80","1","2","0","4","1","Observacao", prop01,"Logrdouro A","357","Complemento endereco","Centro","14.810.244","Cidade","Estado");
-			Imovel im02 = new Imovel(2L, "Proprietario numero 3","987","Complemento imivel",0,0,0,0,"1000","80","1","2","0","4","1","Observacao", prop01,"Logrdouro B","100","Complemento endereco","Centro","14.810.244","Cidade","Estado");
-			Imovel im03 = new Imovel(3l,"Proprietario numero 3","987","Complemento imivel",0,0,0,0,"1000","80","1","2","0","4","1","Observacao", prop01,"Logrdouro C","146","Complemento endereco","Centro","14.810.244","Cidade","Estado");
+			imovelRepository.saveAll(Arrays.asList(imovel,imv02));
 			
-			
-			Foto ft01 = new Foto(null,"/tmp","foto teste", "arquivo01.png", im01);
-			Foto ft02 = new Foto(null,"/tmp","foto teste 2", "arquivo02.png", im01);
-			Foto ft03 = new Foto(null,"/tmp","foto teste 3", "arquivo03.png", im01);
-			
-			Foto ft04 = new Foto(null,"/tmp","foto teste 3", "arquivo04.png", im02);
-			
-			im01.setFotos(Arrays.asList(ft01,ft02,ft03));
-			im02.setFotos(Arrays.asList(ft04));
-			imovelRepository.saveAll(Arrays.asList(im01,im02,im03));			
-			
+			log.info("****************  Carga de Arquivos  ********************");
 		}
 		
 	}
 
-	@Bean
-	public ImovelService imovelService() {
-		return new ImovelService(null, imovelRepository);
-	}
+//	@Bean
+//	public ImovelService imovelService() {
+//		return new ImovelService(null, imovelRepository);
+//	}
 	
 }

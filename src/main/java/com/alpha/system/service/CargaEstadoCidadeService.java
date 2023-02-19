@@ -51,4 +51,8 @@ public class CargaEstadoCidadeService {
 		return estadoRepository.findAll();
 	}
 	
+	public List<Cidade> getAllCidades(){
+		return cidadeRepository.findAll();
+	}
+	
 }
